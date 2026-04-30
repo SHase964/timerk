@@ -1,0 +1,56 @@
+{
+  "folders": [
+    {
+      "name": "timerk",
+      "path": "."
+    },
+    {
+      "path": "backend"
+    },
+    {
+      "path": "frontend"
+    },
+    {
+      "path": "menubar"
+    },
+    {
+      "path": "data"
+    }
+  ],
+  "settings": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.fixAll.stylelint": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnType": true,
+    "json.format.keepLines": true,
+    "terminal.integrated.cwd": "${workspaceFolder:timerk}",
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/.mypy_cache": true,
+      "**/.pytest_cache": true,
+      "**/.ruff_cache": true
+    },
+    "[python]": {
+      "editor.defaultFormatter": "charliermarsh.ruff",
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+      }
+    },
+    "mypy-type-checker.args": ["--config-file=pyproject.toml"],
+    "eslint.enable": true,
+    "flake8.enabled": false,
+    "prettier.bracketSpacing": true,
+    "ruff.enable": true
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "ms-python.mypy-type-checker",
+      "charliermarsh.ruff"
+    ]
+  }
+}
