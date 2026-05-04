@@ -1,12 +1,12 @@
-import subprocess
-import sys
 from datetime import datetime
 from pathlib import Path
+import subprocess
+import sys
 
-import requests
-import rumps
 from AppKit import NSColor, NSForegroundColorAttributeName
 from Foundation import NSMutableAttributedString
+import requests
+import rumps
 
 API_BASE = "http://127.0.0.1:8000/api"
 SETTINGS_URL = "http://127.0.0.1:8000/#/settings"
@@ -66,21 +66,15 @@ class TimerkApp(rumps.App):
             self._projects = []
 
         try:
-            settings = requests.get(
-                f"{API_BASE}/settings", timeout=REQUEST_TIMEOUT
-            ).json()
+            settings = requests.get(f"{API_BASE}/settings", timeout=REQUEST_TIMEOUT).json()
             for setting in settings:
                 if setting["key"] == "show_seconds":
                     self.show_seconds = setting["value"] == "true"
         except Exception as e:
-            rumps.notification(
-                title="timerk", subtitle="設定の取得失敗", message=str(e)
-            )
+            rumps.notification(title="timerk", subtitle="設定の取得失敗", message=str(e))
 
         try:
-            active = requests.get(
-                f"{API_BASE}/time-entries/active", timeout=REQUEST_TIMEOUT
-            ).json()
+            active = requests.get(f"{API_BASE}/time-entries/active", timeout=REQUEST_TIMEOUT).json()
             if active:
                 self.active_started_at = datetime.fromisoformat(active["started_at"])
                 self.active_project_id = active["project_id"]
@@ -88,9 +82,7 @@ class TimerkApp(rumps.App):
                 self.active_started_at = None
                 self.active_project_id = None
         except Exception as e:
-            rumps.notification(
-                title="timerk", subtitle="タイマー状態取得失敗", message=str(e)
-            )
+            rumps.notification(title="timerk", subtitle="タイマー状態取得失敗", message=str(e))
 
     # --- Menu ---
 
@@ -100,12 +92,8 @@ class TimerkApp(rumps.App):
         if self._projects:
             for project in self._projects:
                 title = f"{CIRCLE} {project['name']}"
-                item = rumps.MenuItem(
-                    title, callback=self._make_start_callback(project["id"])
-                )
-                attr = _colored_circle_attributed(
-                    title, project.get("color", DEFAULT_HEX)
-                )
+                item = rumps.MenuItem(title, callback=self._make_start_callback(project["id"]))
+                attr = _colored_circle_attributed(title, project.get("color", DEFAULT_HEX))
                 item._menuitem.setAttributedTitle_(attr)
                 self.menu.add(item)
         else:
@@ -150,9 +138,7 @@ class TimerkApp(rumps.App):
             rumps.notification("timerk", "停止", "計測中のタイマーはありません")
             return
         try:
-            res = requests.post(
-                f"{API_BASE}/time-entries/stop", timeout=REQUEST_TIMEOUT
-            )
+            res = requests.post(f"{API_BASE}/time-entries/stop", timeout=REQUEST_TIMEOUT)
             res.raise_for_status()
             self.active_started_at = None
             self.active_project_id = None
@@ -168,9 +154,7 @@ class TimerkApp(rumps.App):
             return
 
         try:
-            self._settings_proc = subprocess.Popen(
-                [sys.executable, str(WINDOW_SCRIPT), SETTINGS_URL, "timerk - 設定"]
-            )
+            self._settings_proc = subprocess.Popen([sys.executable, str(WINDOW_SCRIPT), SETTINGS_URL, "timerk - 設定"])
         except Exception as e:
             rumps.notification("timerk", "設定画面の起動失敗", str(e))
 
@@ -185,9 +169,7 @@ class TimerkApp(rumps.App):
         button = self._nsapp.nsstatusitem.button()
 
         if self.active_started_at is None:
-            button.setAttributedTitle_(
-                NSMutableAttributedString.alloc().initWithString_("⏱")
-            )
+            button.setAttributedTitle_(NSMutableAttributedString.alloc().initWithString_("⏱"))
             return
 
         elapsed = int((datetime.now() - self.active_started_at).total_seconds())
@@ -202,11 +184,7 @@ class TimerkApp(rumps.App):
         color_hex = DEFAULT_HEX
         if self.active_project_id is not None:
             proj = next(
-                (
-                    project
-                    for project in self._projects
-                    if project["id"] == self.active_project_id
-                ),
+                (project for project in self._projects if project["id"] == self.active_project_id),
                 None,
             )
             if proj is not None:

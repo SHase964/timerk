@@ -1,6 +1,8 @@
 from collections.abc import Generator
 from pathlib import Path
+from typing import Annotated, Any
 
+from fastapi import Depends
 from sqlalchemy import event, text
 from sqlmodel import Session, SQLModel, create_engine, select
 
@@ -40,7 +42,7 @@ engine = create_engine(
 
 
 @event.listens_for(engine, "connect")
-def _set_sqlite_pragmas(dbapi_conn, _):
+def _set_sqlite_pragmas(dbapi_conn: Any, _: Any) -> None:
     cursor = dbapi_conn.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.execute("PRAGMA journal_mode=WAL")
@@ -54,9 +56,7 @@ def init_db() -> None:
     _migrate_palette_names_to_hex()
 
     with Session(engine) as session:
-        existing = session.exec(
-            select(Setting).where(Setting.key == "show_seconds")
-        ).first()
+        existing = session.exec(select(Setting).where(Setting.key == "show_seconds")).first()
         if existing is None:
             session.add(Setting(key="show_seconds", value="false"))
             session.commit()
@@ -67,11 +67,7 @@ def _migrate_add_color_column() -> None:
         cols = [row[1] for row in conn.execute(text("PRAGMA table_info(projects)"))]
         if "color" in cols:
             return
-        conn.execute(
-            text(
-                "ALTER TABLE projects ADD COLUMN color TEXT NOT NULL DEFAULT '#007AFF'"
-            )
-        )
+        conn.execute(text("ALTER TABLE projects ADD COLUMN color TEXT NOT NULL DEFAULT '#007AFF'"))
         rows = conn.execute(text("SELECT id FROM projects ORDER BY id")).all()
         for i, (pid,) in enumerate(rows):
             conn.execute(
@@ -91,9 +87,12 @@ def _migrate_palette_names_to_hex() -> None:
                 )
 
 
-def get_session() -> Generator[Session, None, None]:
+def get_session() -> Generator[Session]:
     with Session(engine) as session:
         yield session
+
+
+SessionDep = Annotated[Session, Depends(get_session)]
 
 
 if __name__ == "__main__":

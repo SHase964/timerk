@@ -43,7 +43,8 @@
     "eslint.enable": true,
     "flake8.enabled": false,
     "prettier.bracketSpacing": true,
-    "ruff.enable": true
+    "ruff.enable": true,
+    "ruff.configuration": "${workspaceFolder:timerk}/pyproject.toml"
   },
   "extensions": {
     "recommendations": [

@@ -1,4 +1,4 @@
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from models import Project
 
@@ -20,7 +20,7 @@ class ProjectService:
         self.session = session
 
     def list_all(self) -> list[Project]:
-        statement = select(Project).order_by(Project.created_at)
+        statement = select(Project).order_by(col(Project.created_at))
         return list(self.session.exec(statement).all())
 
     def create(self, name: str, color: str | None = None) -> Project:

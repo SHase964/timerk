@@ -1,5 +1,5 @@
-from models.project import Project
-from models.setting import Setting
-from models.time_entry import TimeEntry
+from .project import Project
+from .setting import Setting
+from .time_entry import TimeEntry
 
 __all__ = ["Project", "Setting", "TimeEntry"]
