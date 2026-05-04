@@ -2,6 +2,18 @@ from sqlmodel import Session, select
 
 from models import Project
 
+COLOR_PALETTE = [
+    "#FF3B30",
+    "#FF9500",
+    "#FFCC00",
+    "#34C759",
+    "#007AFF",
+    "#AF52DE",
+    "#FF2D55",
+    "#5AC8FA",
+    "#A2845E",
+]
+
 
 class ProjectService:
     def __init__(self, session: Session):
@@ -11,8 +23,11 @@ class ProjectService:
         statement = select(Project).order_by(Project.created_at)
         return list(self.session.exec(statement).all())
 
-    def create(self, name: str) -> Project:
-        project = Project(name=name)
+    def create(self, name: str, color: str | None = None) -> Project:
+        if color is None:
+            count = len(self.list_all())
+            color = COLOR_PALETTE[count % len(COLOR_PALETTE)]
+        project = Project(name=name, color=color)
         self.session.add(project)
         self.session.commit()
         self.session.refresh(project)
@@ -25,3 +40,13 @@ class ProjectService:
         self.session.delete(project)
         self.session.commit()
         return True
+
+    def update_color(self, project_id: int, color: str) -> Project | None:
+        project = self.session.get(Project, project_id)
+        if project is None:
+            return None
+        project.color = color
+        self.session.add(project)
+        self.session.commit()
+        self.session.refresh(project)
+        return project

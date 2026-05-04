@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
 from core.database import get_session
-from schemas.project import ProjectCreate, ProjectRead
+from schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
 from services.project import ProjectService
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -22,7 +22,19 @@ def create_project(
     payload: ProjectCreate,
     svc: ProjectService = Depends(get_project_service),
 ):
-    return svc.create(payload.name)
+    return svc.create(payload.name, payload.color)
+
+
+@router.put("/{project_id}", response_model=ProjectRead)
+def update_project(
+    project_id: int,
+    payload: ProjectUpdate,
+    svc: ProjectService = Depends(get_project_service),
+):
+    project = svc.update_color(project_id, payload.color)
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
 
 
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)

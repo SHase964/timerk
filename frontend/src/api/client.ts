@@ -7,6 +7,7 @@ export const api = axios.create({
 export type Project = {
   id: number;
   name: string;
+  color: string;
   created_at: string;
 };
 
@@ -27,6 +28,14 @@ export async function createProject(name: string): Promise<Project> {
 
 export async function deleteProject(id: number): Promise<void> {
   await api.delete(`/projects/${id}`);
+}
+
+export async function updateProjectColor(
+  id: number,
+  color: string,
+): Promise<Project> {
+  const res = await api.put<Project>(`/projects/${id}`, { color });
+  return res.data;
 }
 
 export async function listSettings(): Promise<Setting[]> {

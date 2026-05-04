@@ -5,18 +5,46 @@ from pathlib import Path
 
 import requests
 import rumps
+from AppKit import NSColor, NSForegroundColorAttributeName
+from Foundation import NSMutableAttributedString
 
 API_BASE = "http://127.0.0.1:8000/api"
 SETTINGS_URL = "http://127.0.0.1:8000/#/settings"
 REQUEST_TIMEOUT = 2
 WINDOW_SCRIPT = Path(__file__).resolve().parent / "window.py"
 
+CIRCLE = "●"
+DEFAULT_HEX = "#8E8E93"
+
+
+def _hex_to_nscolor(hex_str: str) -> NSColor:
+    h = hex_str.lstrip("#")
+    if len(h) != 6:
+        h = DEFAULT_HEX.lstrip("#")
+    r = int(h[0:2], 16) / 255.0
+    g = int(h[2:4], 16) / 255.0
+    b = int(h[4:6], 16) / 255.0
+    return NSColor.colorWithSRGBRed_green_blue_alpha_(r, g, b, 1.0)
+
+
+def _colored_circle_attributed(text: str, color_hex: str) -> NSMutableAttributedString:
+    """text の先頭 1 文字 (●) を color_hex で塗った NSAttributedString を返す。"""
+    attr = NSMutableAttributedString.alloc().initWithString_(text)
+    attr.addAttribute_value_range_(
+        NSForegroundColorAttributeName,
+        _hex_to_nscolor(color_hex),
+        (0, 1),
+    )
+    return attr
+
 
 class TimerkApp(rumps.App):
     def __init__(self) -> None:
         super().__init__("⏱", quit_button=None)
         self.active_started_at: datetime | None = None
-        self.timer_unit: str = "min"
+        self.active_project_id: int | None = None
+        self.show_seconds: bool = False
+        self._projects: list[dict] = []
         self._stop_item: rumps.MenuItem | None = None
         self._settings_proc: subprocess.Popen | None = None
 
@@ -30,46 +58,56 @@ class TimerkApp(rumps.App):
 
     def _refresh_state(self) -> None:
         try:
-            settings = requests.get(f"{API_BASE}/settings", timeout=REQUEST_TIMEOUT).json()
-            for s in settings:
-                if s["key"] == "timer_unit":
-                    self.timer_unit = s["value"]
+            res = requests.get(f"{API_BASE}/projects", timeout=REQUEST_TIMEOUT)
+            res.raise_for_status()
+            self._projects = res.json()
         except Exception as e:
-            rumps.notification("timerk", "設定の取得失敗", str(e))
+            rumps.notification(title="timerk", subtitle="PJ 取得失敗", message=str(e))
+            self._projects = []
+
+        try:
+            settings = requests.get(
+                f"{API_BASE}/settings", timeout=REQUEST_TIMEOUT
+            ).json()
+            for setting in settings:
+                if setting["key"] == "show_seconds":
+                    self.show_seconds = setting["value"] == "true"
+        except Exception as e:
+            rumps.notification(
+                title="timerk", subtitle="設定の取得失敗", message=str(e)
+            )
 
         try:
             active = requests.get(
                 f"{API_BASE}/time-entries/active", timeout=REQUEST_TIMEOUT
             ).json()
-            self.active_started_at = (
-                datetime.fromisoformat(active["started_at"]) if active else None
+            if active:
+                self.active_started_at = datetime.fromisoformat(active["started_at"])
+                self.active_project_id = active["project_id"]
+            else:
+                self.active_started_at = None
+                self.active_project_id = None
+        except Exception as e:
+            rumps.notification(
+                title="timerk", subtitle="タイマー状態取得失敗", message=str(e)
             )
-        except Exception as e:
-            rumps.notification("timerk", "タイマー状態取得失敗", str(e))
-
-    def _fetch_projects(self) -> list[dict]:
-        try:
-            res = requests.get(f"{API_BASE}/projects", timeout=REQUEST_TIMEOUT)
-            res.raise_for_status()
-            return res.json()
-        except Exception as e:
-            rumps.notification("timerk", "PJ 取得失敗", str(e))
-            return []
 
     # --- Menu ---
 
     def _build_menu(self) -> None:
         self.menu.clear()
 
-        projects = self._fetch_projects()
-
-        if projects:
-            for p in projects:
-                self.menu.add(
-                    rumps.MenuItem(
-                        p["name"], callback=self._make_start_callback(p["id"])
-                    )
+        if self._projects:
+            for project in self._projects:
+                title = f"{CIRCLE} {project['name']}"
+                item = rumps.MenuItem(
+                    title, callback=self._make_start_callback(project["id"])
                 )
+                attr = _colored_circle_attributed(
+                    title, project.get("color", DEFAULT_HEX)
+                )
+                item._menuitem.setAttributedTitle_(attr)
+                self.menu.add(item)
         else:
             placeholder = rumps.MenuItem("(プロジェクト未登録)")
             self.menu.add(placeholder)
@@ -103,6 +141,7 @@ class TimerkApp(rumps.App):
             res.raise_for_status()
             data = res.json()
             self.active_started_at = datetime.fromisoformat(data["started_at"])
+            self.active_project_id = data["project_id"]
         except Exception as e:
             rumps.notification("timerk", "開始失敗", str(e))
 
@@ -116,6 +155,7 @@ class TimerkApp(rumps.App):
             )
             res.raise_for_status()
             self.active_started_at = None
+            self.active_project_id = None
         except Exception as e:
             rumps.notification("timerk", "停止失敗", str(e))
 
@@ -142,18 +182,39 @@ class TimerkApp(rumps.App):
             self._refresh_state()
             self._build_menu()
 
+        button = self._nsapp.nsstatusitem.button()
+
         if self.active_started_at is None:
-            self.title = "⏱"
+            button.setAttributedTitle_(
+                NSMutableAttributedString.alloc().initWithString_("⏱")
+            )
             return
 
         elapsed = int((datetime.now() - self.active_started_at).total_seconds())
 
-        if self.timer_unit == "sec":
+        if self.show_seconds:
             h, m, s = elapsed // 3600, (elapsed % 3600) // 60, elapsed % 60
-            self.title = f"{h:02d}:{m:02d}:{s:02d}"
+            time_str = f"{h:02d}:{m:02d}:{s:02d}"
         else:
             m, s = elapsed // 60, elapsed % 60
-            self.title = f"{m:02d}:{s:02d}"
+            time_str = f"{m:02d}:{s:02d}"
+
+        color_hex = DEFAULT_HEX
+        if self.active_project_id is not None:
+            proj = next(
+                (
+                    project
+                    for project in self._projects
+                    if project["id"] == self.active_project_id
+                ),
+                None,
+            )
+            if proj is not None:
+                color_hex = proj.get("color", DEFAULT_HEX)
+
+        title = f"{CIRCLE} {time_str}"
+        attr = _colored_circle_attributed(title, color_hex)
+        button.setAttributedTitle_(attr)
 
 
 if __name__ == "__main__":

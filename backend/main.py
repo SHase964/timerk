@@ -23,9 +23,7 @@ app.include_router(time_entries.router, prefix="/api")
 app.include_router(settings.router, prefix="/api")
 
 if FRONTEND_DIST.exists():
-    app.mount(
-        "/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend"
-    )
+    app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
 
 
 if __name__ == "__main__":
