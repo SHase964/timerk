@@ -1,6 +1,6 @@
 from sqlmodel import Session, col, select
 
-from models import Project
+from backend.models import Project
 
 COLOR_PALETTE = [
     "#FF3B30",

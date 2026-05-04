@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlmodel import Session, col, select
 
-from models import Project, TimeEntry
+from backend.models import Project, TimeEntry
 
 
 class TimeEntryService:

@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from core.database import SessionDep
-from models import TimeEntry
-from schemas.time_entry import TimeEntryRead, TimeEntryStartRequest
-from services.time_entry import TimeEntryService
+from backend.core.database import SessionDep
+from backend.models import TimeEntry
+from backend.schemas.time_entry import TimeEntryRead, TimeEntryStartRequest
+from backend.services.time_entry import TimeEntryService
 
 router = APIRouter(prefix="/time-entries", tags=["time_entries"])
 

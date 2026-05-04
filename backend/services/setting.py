@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
 
-from models import Setting
+from backend.models import Setting
 
 
 class SettingService:

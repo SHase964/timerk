@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from core.database import SessionDep
-from models import Setting
-from schemas.setting import SettingRead, SettingUpdate
-from services.setting import SettingService
+from backend.core.database import SessionDep
+from backend.models import Setting
+from backend.schemas.setting import SettingRead, SettingUpdate
+from backend.services.setting import SettingService
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 

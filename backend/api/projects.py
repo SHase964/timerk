@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from core.database import SessionDep
-from models import Project
-from schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
-from services.project import ProjectService
+from backend.core.database import SessionDep
+from backend.models import Project
+from backend.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
+from backend.services.project import ProjectService
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 

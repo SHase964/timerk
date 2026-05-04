@@ -6,8 +6,7 @@ from fastapi import Depends
 from sqlalchemy import event, text
 from sqlmodel import Session, SQLModel, create_engine, select
 
-import models  # noqa: F401  # SQLModel.metadata にテーブル登録するための副作用 import
-from models import Setting
+from backend.models import Setting
 
 PALETTE = [
     "#FF3B30",

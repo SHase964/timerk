@@ -43,6 +43,7 @@
     "eslint.enable": true,
     "flake8.enabled": false,
     "prettier.bracketSpacing": true,
+    "python.analysis.extraPaths": ["${workspaceFolder:timerk}"],
     "ruff.enable": true,
     "ruff.configuration": "${workspaceFolder:timerk}/pyproject.toml"
   },

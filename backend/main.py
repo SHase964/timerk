@@ -5,8 +5,8 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from api import projects, settings, time_entries
-from core.database import init_db
+from backend.api import projects, settings, time_entries
+from backend.core.database import init_db
 
 FRONTEND_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 

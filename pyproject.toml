@@ -20,7 +20,6 @@ dev = ["mypy>=1.20.2", "ruff>=0.15.12"]
 reportCallIssue = "none"
 
 [tool.mypy]
-mypy_path = "backend"
 disallow_untyped_defs = true
 explicit_package_bases = true
 ignore_missing_imports = true
@@ -92,7 +91,7 @@ ignore = [
 combine-as-imports = true
 force-sort-within-sections = true
 force-wrap-aliases = true
-known-first-party = ["api", "core", "models", "schemas", "services"]
+known-first-party = ["backend"]
 
 [tool.ruff.lint.per-file-ignores]
 "src/libs/logging.py" = ["A005"]
