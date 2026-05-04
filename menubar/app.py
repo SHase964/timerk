@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 from AppKit import NSColor, NSForegroundColorAttributeName
-from Foundation import NSMutableAttributedString
+from Foundation import NSDate, NSMutableAttributedString, NSRunLoop, NSRunLoopCommonModes, NSTimer
 import requests
 import rumps
 
@@ -52,7 +52,24 @@ class TimerkApp(rumps.App):
         self._build_menu()
 
         self._tick_timer = rumps.Timer(self._tick, 1)
-        self._tick_timer.start()
+        self._start_tick_timer_in_common_modes()
+
+    def _start_tick_timer_in_common_modes(self) -> None:
+        # rumps.Timer は NSDefaultRunLoopMode に登録するため、メニュー表示中
+        # (NSEventTrackingRunLoopMode) は発火せず時間表示が止まって見える。
+        # NSRunLoopCommonModes に登録してメニュー操作中も発火させる。
+        timer = self._tick_timer
+        timer._nsdate = NSDate.date()
+        timer._nstimer = NSTimer.alloc().initWithFireDate_interval_target_selector_userInfo_repeats_(
+            timer._nsdate,
+            timer._interval,
+            timer,
+            "callback:",
+            None,
+            True,
+        )
+        NSRunLoop.currentRunLoop().addTimer_forMode_(timer._nstimer, NSRunLoopCommonModes)
+        timer._status = True
 
     # --- Remote state ---
 
