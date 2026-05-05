@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import {
+  Box,
   Button,
   Container,
   FormControlLabel,
@@ -64,9 +65,7 @@ export function Settings() {
   }
 
   async function handleColorChange(id: number, color: string) {
-    setProjects((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, color } : p)),
-    );
+    setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, color } : p)));
     await updateProjectColor(id, color);
   }
 
@@ -77,115 +76,130 @@ export function Settings() {
 
   if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
   if (error)
-    return (
-      <div style={{ padding: 24, color: "crimson" }}>エラー: {error}</div>
-    );
+    return <div style={{ padding: 24, color: "crimson" }}>エラー: {error}</div>;
 
   return (
-    <Container maxWidth="sm" sx={{ py: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        ⚙️ 設定
-      </Typography>
+    <Box sx={{ py: 3 }}>
+      <Container maxWidth="sm">
+        <Typography
+          variant="h6"
+          component="h1"
+          gutterBottom
+          sx={{ textAlign: "left", fontWeight: 700 }}
+        >
+          設定
+        </Typography>
+      </Container>
 
-      <Stack spacing={4}>
-        <section>
-          <Typography
-            variant="subtitle2"
-            component="h2"
-            color="text.secondary"
-            gutterBottom
-          >
-            プロジェクト管理
-          </Typography>
-          <Stack
-            component="form"
-            direction="row"
-            spacing={1}
-            onSubmit={handleAdd}
-            sx={{ mb: 2 }}
-          >
-            <TextField
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="新しい PJ 名"
-              size="small"
-              fullWidth
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={!newName.trim()}
+      <Stack spacing={4} sx={{ mt: 2 }}>
+        <Box component="section">
+          <Container maxWidth="sm">
+            <Typography
+              variant="subtitle2"
+              component="h2"
+              color="text.secondary"
+              sx={{ mb: 1, textAlign: "left", fontWeight: 600 }}
             >
-              追加
-            </Button>
-          </Stack>
-          {projects.length === 0 ? (
-            <p style={{ color: "#888" }}>プロジェクトがありません</p>
-          ) : (
-            <ul style={{ listStyle: "none", padding: 0 }}>
-              {projects.map((p) => (
-                <li
-                  key={p.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "8px 12px",
-                    borderBottom: "1px solid #eee",
-                  }}
-                >
-                  <span
-                    style={{ display: "flex", alignItems: "center", gap: 10 }}
-                  >
-                    <input
-                      type="color"
-                      value={p.color}
-                      onChange={(e) => handleColorChange(p.id, e.target.value)}
-                      style={{
-                        width: 28,
-                        height: 24,
-                        padding: 0,
-                        border: "1px solid #ccc",
-                        borderRadius: 4,
-                        cursor: "pointer",
-                      }}
-                      title="色を変更"
-                    />
-                    {p.name}
-                  </span>
-                  <button onClick={() => handleDelete(p.id)}>削除</button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section>
-          <Typography
-            variant="subtitle2"
-            component="h2"
-            color="text.secondary"
-            gutterBottom
-          >
-            タイマー表示
-          </Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={showSeconds}
-                onChange={(e) => handleShowSecondsChange(e.target.checked)}
+              プロジェクト管理
+            </Typography>
+            <Stack
+              component="form"
+              direction="row"
+              spacing={1}
+              onSubmit={handleAdd}
+              sx={{ mb: 2 }}
+            >
+              <TextField
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="新しい PJ 名"
+                size="small"
+                fullWidth
               />
-            }
-            label="秒まで表示する (例: 00:42:30)"
-            labelPlacement="start"
-            sx={{
-              ml: 0,
-              width: "100%",
-              justifyContent: "space-between",
-            }}
-          />
-        </section>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={!newName.trim()}
+              >
+                追加
+              </Button>
+            </Stack>
+            {projects.length === 0 ? (
+              <p style={{ color: "#888" }}>プロジェクトがありません</p>
+            ) : (
+              <ul style={{ listStyle: "none", padding: 0 }}>
+                {projects.map((p) => (
+                  <li
+                    key={p.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "8px 12px",
+                      borderBottom: "1px solid #eee",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                      }}
+                    >
+                      <input
+                        type="color"
+                        value={p.color}
+                        onChange={(e) =>
+                          handleColorChange(p.id, e.target.value)
+                        }
+                        style={{
+                          width: 28,
+                          height: 24,
+                          padding: 0,
+                          border: "1px solid #ccc",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                        }}
+                        title="色を変更"
+                      />
+                      {p.name}
+                    </span>
+                    <button onClick={() => handleDelete(p.id)}>削除</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Container>
+        </Box>
+
+        <Box component="section">
+          <Container maxWidth="sm">
+            <Typography
+              variant="subtitle2"
+              component="h2"
+              color="text.secondary"
+              sx={{ mb: 1, textAlign: "left", fontWeight: 600 }}
+            >
+              タイマー表示
+            </Typography>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showSeconds}
+                  onChange={(e) => handleShowSecondsChange(e.target.checked)}
+                />
+              }
+              label="秒まで表示する (例: 00:42:30)"
+              labelPlacement="start"
+              sx={{
+                ml: 0,
+                width: "100%",
+                justifyContent: "space-between",
+              }}
+            />
+          </Container>
+        </Box>
       </Stack>
-    </Container>
+    </Box>
   );
 }
