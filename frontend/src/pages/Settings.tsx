@@ -4,11 +4,16 @@ import {
   Button,
   Container,
   FormControlLabel,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
   Stack,
   Switch,
   TextField,
   Typography,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   createProject,
   deleteProject,
@@ -125,49 +130,47 @@ export function Settings() {
               </Button>
             </Stack>
             {projects.length === 0 ? (
-              <p style={{ color: "#888" }}>プロジェクトがありません</p>
+              <Typography color="text.secondary">
+                プロジェクトがありません
+              </Typography>
             ) : (
-              <ul style={{ listStyle: "none", padding: 0 }}>
+              <List disablePadding>
                 {projects.map((p) => (
-                  <li
+                  <ListItem
                     key={p.id}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "8px 12px",
-                      borderBottom: "1px solid #eee",
-                    }}
+                    divider
+                    disableGutters
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        aria-label="削除"
+                        onClick={() => handleDelete(p.id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    }
                   >
-                    <span
+                    <input
+                      type="color"
+                      value={p.color}
+                      onChange={(e) =>
+                        handleColorChange(p.id, e.target.value)
+                      }
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
+                        width: 28,
+                        height: 24,
+                        padding: 0,
+                        border: "1px solid #ccc",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        marginRight: 12,
                       }}
-                    >
-                      <input
-                        type="color"
-                        value={p.color}
-                        onChange={(e) =>
-                          handleColorChange(p.id, e.target.value)
-                        }
-                        style={{
-                          width: 28,
-                          height: 24,
-                          padding: 0,
-                          border: "1px solid #ccc",
-                          borderRadius: 4,
-                          cursor: "pointer",
-                        }}
-                        title="色を変更"
-                      />
-                      {p.name}
-                    </span>
-                    <button onClick={() => handleDelete(p.id)}>削除</button>
-                  </li>
+                      title="色を変更"
+                    />
+                    <ListItemText primary={p.name} />
+                  </ListItem>
                 ))}
-              </ul>
+              </List>
             )}
           </Container>
         </Box>
