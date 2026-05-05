@@ -1,5 +1,14 @@
 import { useEffect, useState, type FormEvent } from "react";
 import {
+  Button,
+  Container,
+  FormControlLabel,
+  Stack,
+  Switch,
+  TextField,
+  Typography,
+} from "@mui/material";
+import {
   createProject,
   deleteProject,
   listProjects,
@@ -73,75 +82,110 @@ export function Settings() {
     );
 
   return (
-    <div style={{ padding: 24, maxWidth: 560, margin: "0 auto" }}>
-      <h1>⚙️ 設定</h1>
+    <Container maxWidth="sm" sx={{ py: 3 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        ⚙️ 設定
+      </Typography>
 
-      <section style={{ marginBottom: 32 }}>
-        <h2>プロジェクト管理</h2>
-        <form
-          onSubmit={handleAdd}
-          style={{ display: "flex", gap: 8, marginBottom: 16 }}
-        >
-          <input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="新しい PJ 名"
-            style={{ flex: 1, padding: "6px 10px" }}
+      <Stack spacing={4}>
+        <section>
+          <Typography
+            variant="subtitle2"
+            component="h2"
+            color="text.secondary"
+            gutterBottom
+          >
+            プロジェクト管理
+          </Typography>
+          <Stack
+            component="form"
+            direction="row"
+            spacing={1}
+            onSubmit={handleAdd}
+            sx={{ mb: 2 }}
+          >
+            <TextField
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="新しい PJ 名"
+              size="small"
+              fullWidth
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={!newName.trim()}
+            >
+              追加
+            </Button>
+          </Stack>
+          {projects.length === 0 ? (
+            <p style={{ color: "#888" }}>プロジェクトがありません</p>
+          ) : (
+            <ul style={{ listStyle: "none", padding: 0 }}>
+              {projects.map((p) => (
+                <li
+                  key={p.id}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "8px 12px",
+                    borderBottom: "1px solid #eee",
+                  }}
+                >
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <input
+                      type="color"
+                      value={p.color}
+                      onChange={(e) => handleColorChange(p.id, e.target.value)}
+                      style={{
+                        width: 28,
+                        height: 24,
+                        padding: 0,
+                        border: "1px solid #ccc",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                      }}
+                      title="色を変更"
+                    />
+                    {p.name}
+                  </span>
+                  <button onClick={() => handleDelete(p.id)}>削除</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section>
+          <Typography
+            variant="subtitle2"
+            component="h2"
+            color="text.secondary"
+            gutterBottom
+          >
+            タイマー表示
+          </Typography>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showSeconds}
+                onChange={(e) => handleShowSecondsChange(e.target.checked)}
+              />
+            }
+            label="秒まで表示する (例: 00:42:30)"
+            labelPlacement="start"
+            sx={{
+              ml: 0,
+              width: "100%",
+              justifyContent: "space-between",
+            }}
           />
-          <button type="submit" disabled={!newName.trim()}>
-            追加
-          </button>
-        </form>
-        {projects.length === 0 ? (
-          <p style={{ color: "#888" }}>プロジェクトがありません</p>
-        ) : (
-          <ul style={{ listStyle: "none", padding: 0 }}>
-            {projects.map((p) => (
-              <li
-                key={p.id}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "8px 12px",
-                  borderBottom: "1px solid #eee",
-                }}
-              >
-                <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <input
-                    type="color"
-                    value={p.color}
-                    onChange={(e) => handleColorChange(p.id, e.target.value)}
-                    style={{
-                      width: 28,
-                      height: 24,
-                      padding: 0,
-                      border: "1px solid #ccc",
-                      borderRadius: 4,
-                      cursor: "pointer",
-                    }}
-                    title="色を変更"
-                  />
-                  {p.name}
-                </span>
-                <button onClick={() => handleDelete(p.id)}>削除</button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section>
-        <h2>タイマー表示</h2>
-        <label style={{ display: "block" }}>
-          <input
-            type="checkbox"
-            checked={showSeconds}
-            onChange={(e) => handleShowSecondsChange(e.target.checked)}
-          />{" "}
-          秒まで表示する (例: 00:42:30)
-        </label>
-      </section>
-    </div>
+        </section>
+      </Stack>
+    </Container>
   );
 }
