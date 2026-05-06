@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from backend.api import projects, settings, time_entries
+from backend.api import projects, reports, settings, time_entries
 from backend.core.database import init_db
 
 FRONTEND_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
@@ -22,6 +22,7 @@ app = FastAPI(title="timerk", lifespan=lifespan)
 app.include_router(projects.router, prefix="/api")
 app.include_router(time_entries.router, prefix="/api")
 app.include_router(settings.router, prefix="/api")
+app.include_router(reports.router, prefix="/api")
 
 if FRONTEND_DIST.exists():
     app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
