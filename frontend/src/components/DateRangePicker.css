@@ -1,0 +1,46 @@
+.rdp-root {
+  --rdp-accent-color: #1abc9c;
+  --rdp-accent-background-color: #d4f1ea;
+  --rdp-day-height: 36px;
+  --rdp-day-width: 36px;
+  --rdp-day_button-height: 36px;
+  --rdp-day_button-width: 36px;
+  --rdp-day_button-border-radius: 4px;
+  --rdp-selected-border: 0;
+  font-size: 13px;
+}
+
+.rdp-day_button {
+  font-weight: 500;
+}
+
+.rdp-range_start .rdp-day_button,
+.rdp-range_end .rdp-day_button {
+  background-color: var(--rdp-accent-color);
+  color: white;
+}
+
+.rdp-range_middle .rdp-day_button {
+  background-color: var(--rdp-accent-background-color);
+  color: #1a6f5e;
+  border-radius: 0;
+}
+
+.rdp-day:not(.rdp-disabled):not(.rdp-selected):hover .rdp-day_button {
+  background-color: #f0f0f0;
+}
+
+.rdp-caption_label {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.rdp-weekday {
+  font-weight: 500;
+  color: #888;
+  font-size: 12px;
+}
+
+.rdp-outside .rdp-day_button {
+  color: #ccc;
+}

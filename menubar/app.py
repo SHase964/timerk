@@ -10,6 +10,7 @@ import rumps
 
 API_BASE = "http://127.0.0.1:8000/api"
 SETTINGS_URL = "http://127.0.0.1:8000/#/settings"
+REPORT_URL = "http://127.0.0.1:8000/#/report"
 REQUEST_TIMEOUT = 2
 WINDOW_SCRIPT = Path(__file__).resolve().parent / "window.py"
 
@@ -47,6 +48,7 @@ class TimerkApp(rumps.App):
         self._projects: list[dict] = []
         self._stop_item: rumps.MenuItem | None = None
         self._settings_proc: subprocess.Popen | None = None
+        self._report_proc: subprocess.Popen | None = None
 
         self._refresh_state()
         self._build_menu()
@@ -123,6 +125,7 @@ class TimerkApp(rumps.App):
         self.menu.add(self._stop_item)
 
         self.menu.add(rumps.separator)
+        self.menu.add(rumps.MenuItem("📊 レポート", callback=self._open_report))
         self.menu.add(rumps.MenuItem("⚙️ 設定", callback=self._open_settings))
         self.menu.add(rumps.MenuItem("🔄 更新", callback=self._refresh))
         self.menu.add(rumps.separator)
@@ -175,6 +178,15 @@ class TimerkApp(rumps.App):
         except Exception as e:
             rumps.notification("timerk", "設定画面の起動失敗", str(e))
 
+    def _open_report(self, _) -> None:
+        if self._report_proc is not None and self._report_proc.poll() is None:
+            return
+
+        try:
+            self._report_proc = subprocess.Popen([sys.executable, str(WINDOW_SCRIPT), REPORT_URL, "timerk - レポート"])
+        except Exception as e:
+            rumps.notification("timerk", "レポート画面の起動失敗", str(e))
+
     # --- Tick ---
 
     def _tick(self, _) -> None:
@@ -182,6 +194,9 @@ class TimerkApp(rumps.App):
             self._settings_proc = None
             self._refresh_state()
             self._build_menu()
+
+        if self._report_proc is not None and self._report_proc.poll() is not None:
+            self._report_proc = None
 
         button = self._nsapp.nsstatusitem.button()
 

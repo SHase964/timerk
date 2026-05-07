@@ -50,3 +50,33 @@ export async function updateSetting(
   const res = await api.put<Setting>(`/settings/${key}`, { value });
   return res.data;
 }
+
+export type DailyPoint = {
+  date: string;
+  total_sec: number;
+};
+
+export type ProjectBreakdown = {
+  project_id: number;
+  name: string;
+  color: string;
+  total_sec: number;
+};
+
+export type ReportSummary = {
+  date_from: string;
+  date_to: string;
+  total_sec: number;
+  daily: DailyPoint[];
+  by_project: ProjectBreakdown[];
+};
+
+export async function fetchReport(
+  from: string,
+  to: string,
+): Promise<ReportSummary> {
+  const res = await api.get<ReportSummary>("/reports", {
+    params: { from, to },
+  });
+  return res.data;
+}
