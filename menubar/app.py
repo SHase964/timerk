@@ -85,15 +85,7 @@ class TimerkApp(rumps.App):
             rumps.notification(title="timerk", subtitle="PJ 取得失敗", message=str(e))
             self._projects = []
 
-        try:
-            settings = requests.get(f"{API_BASE}/settings", timeout=REQUEST_TIMEOUT).json()
-            for setting in settings:
-                if setting["key"] == "show_seconds":
-                    self.show_seconds = setting["value"] == "true"
-                elif setting["key"] == "show_hours":
-                    self.show_hours = setting["value"] == "true"
-        except Exception as e:
-            rumps.notification(title="timerk", subtitle="設定の取得失敗", message=str(e))
+        self._refresh_settings(notify_on_error=True)
 
         try:
             active = requests.get(f"{API_BASE}/time-entries/active", timeout=REQUEST_TIMEOUT).json()
@@ -105,6 +97,18 @@ class TimerkApp(rumps.App):
                 self.active_project_id = None
         except Exception as e:
             rumps.notification(title="timerk", subtitle="タイマー状態取得失敗", message=str(e))
+
+    def _refresh_settings(self, notify_on_error: bool = False) -> None:
+        try:
+            settings = requests.get(f"{API_BASE}/settings", timeout=REQUEST_TIMEOUT).json()
+            for setting in settings:
+                if setting["key"] == "show_seconds":
+                    self.show_seconds = setting["value"] == "true"
+                elif setting["key"] == "show_hours":
+                    self.show_hours = setting["value"] == "true"
+        except Exception as e:
+            if notify_on_error:
+                rumps.notification(title="timerk", subtitle="設定の取得失敗", message=str(e))
 
     # --- Menu ---
 
@@ -193,6 +197,8 @@ class TimerkApp(rumps.App):
     # --- Tick ---
 
     def _tick(self, _) -> None:
+        self._refresh_settings()
+
         if self._settings_proc is not None and self._settings_proc.poll() is not None:
             self._settings_proc = None
             self._refresh_state()
