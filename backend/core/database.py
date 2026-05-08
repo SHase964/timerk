@@ -55,10 +55,12 @@ def init_db() -> None:
     _migrate_palette_names_to_hex()
 
     with Session(engine) as session:
-        existing = session.exec(select(Setting).where(Setting.key == "show_seconds")).first()
-        if existing is None:
-            session.add(Setting(key="show_seconds", value="false"))
-            session.commit()
+        defaults = {"show_seconds": "false", "show_hours": "false"}
+        for key, value in defaults.items():
+            existing = session.exec(select(Setting).where(Setting.key == key)).first()
+            if existing is None:
+                session.add(Setting(key=key, value=value))
+        session.commit()
 
 
 def _migrate_add_color_column() -> None:

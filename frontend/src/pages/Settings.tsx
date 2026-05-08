@@ -28,6 +28,7 @@ export function Settings() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [newName, setNewName] = useState("");
   const [showSeconds, setShowSeconds] = useState(false);
+  const [showHours, setShowHours] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,9 +45,12 @@ export function Settings() {
         listSettings(),
       ]);
       setProjects(projectList);
-      const value =
+      const secondsValue =
         settingList.find((s) => s.key === "show_seconds")?.value ?? "false";
-      setShowSeconds(value === "true");
+      setShowSeconds(secondsValue === "true");
+      const hoursValue =
+        settingList.find((s) => s.key === "show_hours")?.value ?? "false";
+      setShowHours(hoursValue === "true");
     } catch (e) {
       setError(e instanceof Error ? e.message : "読み込みに失敗しました");
     } finally {
@@ -77,6 +81,10 @@ export function Settings() {
   async function handleShowSecondsChange(value: boolean) {
     setShowSeconds(value);
     await updateSetting("show_seconds", value ? "true" : "false");
+  }
+  async function handleShowHoursChange(value: boolean) {
+    setShowHours(value);
+    await updateSetting("show_hours", value ? "true" : "false");
   }
 
   if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
@@ -153,9 +161,7 @@ export function Settings() {
                     <input
                       type="color"
                       value={p.color}
-                      onChange={(e) =>
-                        handleColorChange(p.id, e.target.value)
-                      }
+                      onChange={(e) => handleColorChange(p.id, e.target.value)}
                       style={{
                         width: 28,
                         height: 24,
@@ -193,6 +199,21 @@ export function Settings() {
                 />
               }
               label="秒まで表示する (例: 00:42:30)"
+              labelPlacement="start"
+              sx={{
+                ml: 0,
+                width: "100%",
+                justifyContent: "space-between",
+              }}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showHours}
+                  onChange={(e) => handleShowHoursChange(e.target.checked)}
+                />
+              }
+              label="時間まで表示する (例: 01:42:30)"
               labelPlacement="start"
               sx={{
                 ml: 0,

@@ -45,6 +45,7 @@ class TimerkApp(rumps.App):
         self.active_started_at: datetime | None = None
         self.active_project_id: int | None = None
         self.show_seconds: bool = False
+        self.show_hours: bool = False
         self._projects: list[dict] = []
         self._stop_item: rumps.MenuItem | None = None
         self._settings_proc: subprocess.Popen | None = None
@@ -89,6 +90,8 @@ class TimerkApp(rumps.App):
             for setting in settings:
                 if setting["key"] == "show_seconds":
                     self.show_seconds = setting["value"] == "true"
+                elif setting["key"] == "show_hours":
+                    self.show_hours = setting["value"] == "true"
         except Exception as e:
             rumps.notification(title="timerk", subtitle="設定の取得失敗", message=str(e))
 
@@ -206,12 +209,21 @@ class TimerkApp(rumps.App):
 
         elapsed = int((datetime.now() - self.active_started_at).total_seconds())
 
-        if self.show_seconds:
-            h, m, s = elapsed // 3600, (elapsed % 3600) // 60, elapsed % 60
-            time_str = f"{h:02d}:{m:02d}:{s:02d}"
+        if self.show_hours:
+            hours = elapsed // 3600
+            minutes = (elapsed % 3600) // 60
+            seconds = elapsed % 60
+            if self.show_seconds:
+                time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+            else:
+                time_str = f"{hours:02d}:{minutes:02d}"
         else:
-            m, s = elapsed // 60, elapsed % 60
-            time_str = f"{m:02d}:{s:02d}"
+            minutes = elapsed // 60
+            seconds = elapsed % 60
+            if self.show_seconds:
+                time_str = f"{minutes:02d}:{seconds:02d}"
+            else:
+                time_str = f"{minutes:02d}"
 
         color_hex = DEFAULT_HEX
         if self.active_project_id is not None:

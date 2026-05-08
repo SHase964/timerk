@@ -28,9 +28,7 @@ class ReportService:
             .order_by(date_expr.asc())
         )
         daily_rows = self.session.exec(daily_stmt).all()
-        daily = [
-            DailyPoint(date=r.date, total_sec=int(r.total_sec)) for r in daily_rows
-        ]
+        daily = [DailyPoint(date=r.date, total_sec=int(r.total_sec)) for r in daily_rows]
 
         project_stmt = (
             select(
