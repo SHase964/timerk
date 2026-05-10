@@ -25,19 +25,21 @@ class ReportService:
         daily_stmt = (
             select(
                 date_expr.label("date"),
-                TimeEntry.project_id,
+                col(TimeEntry.project_id),
                 func.coalesce(func.sum(TimeEntry.duration_sec), 0).label("total_sec"),
             )
             .where(col(TimeEntry.stopped_at).is_not(None))
             .where(date_expr >= from_str)
             .where(date_expr <= to_str)
-            .group_by(date_expr, TimeEntry.project_id)
+            .group_by(date_expr, col(TimeEntry.project_id))
             .order_by(date_expr.asc(), col(TimeEntry.project_id).asc())
         )
         daily_rows = self.session.exec(daily_stmt).all()
         by_date: dict[str, list[DailyProjectPoint]] = defaultdict(list)
-        for r in daily_rows:
-            by_date[r.date].append(DailyProjectPoint(project_id=r.project_id, total_sec=int(r.total_sec)))
+        for date_val, project_id, total_sec in daily_rows:
+            by_date[str(date_val)].append(
+                DailyProjectPoint(project_id=project_id, total_sec=int(total_sec or 0)),
+            )
         daily = [
             DailyPoint(
                 date=d,
@@ -49,31 +51,32 @@ class ReportService:
 
         project_stmt = (
             select(
-                Project.id,
-                Project.name,
-                Project.color,
+                col(Project.id),
+                col(Project.name),
+                col(Project.color),
                 func.coalesce(func.sum(TimeEntry.duration_sec), 0).label("total_sec"),
             )
             .join(
                 TimeEntry,
-                (TimeEntry.project_id == Project.id)
+                (col(TimeEntry.project_id) == Project.id)
                 & col(TimeEntry.stopped_at).is_not(None)
                 & (date_expr >= from_str)
                 & (date_expr <= to_str),
                 isouter=True,
             )
-            .group_by(Project.id, Project.name, Project.color)
+            .group_by(col(Project.id), col(Project.name), col(Project.color))
             .order_by(func.coalesce(func.sum(TimeEntry.duration_sec), 0).desc())
         )
         project_rows = self.session.exec(project_stmt).all()
         by_project = [
             ProjectBreakdown(
-                project_id=r.id,
-                name=r.name,
-                color=r.color,
-                total_sec=int(r.total_sec),
+                project_id=proj_id,
+                name=name,
+                color=color,
+                total_sec=int(total_sec or 0),
             )
-            for r in project_rows
+            for proj_id, name, color, total_sec in project_rows
+            if proj_id is not None
         ]
 
         total_sec = sum(d.total_sec for d in daily)
