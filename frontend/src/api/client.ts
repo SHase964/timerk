@@ -1,20 +1,17 @@
 import axios from "axios";
 
+import type { components } from "./schema";
+
 export const api = axios.create({
   baseURL: "/api",
 });
 
-export type Project = {
-  id: number;
-  name: string;
-  color: string;
-  created_at: string;
-};
-
-export type Setting = {
-  key: string;
-  value: string;
-};
+export type Project = components["schemas"]["ProjectRead"];
+export type Setting = components["schemas"]["SettingRead"];
+export type DailyProjectPoint = components["schemas"]["DailyProjectPoint"];
+export type DailyPoint = components["schemas"]["DailyPoint"];
+export type ProjectBreakdown = components["schemas"]["ProjectBreakdown"];
+export type ReportSummary = components["schemas"]["ReportSummary"];
 
 export async function listProjects(): Promise<Project[]> {
   const res = await api.get<Project[]>("/projects");
@@ -50,32 +47,6 @@ export async function updateSetting(
   const res = await api.put<Setting>(`/settings/${key}`, { value });
   return res.data;
 }
-
-export type DailyProjectPoint = {
-  project_id: number;
-  total_sec: number;
-};
-
-export type DailyPoint = {
-  date: string;
-  total_sec: number;
-  by_project: DailyProjectPoint[];
-};
-
-export type ProjectBreakdown = {
-  project_id: number;
-  name: string;
-  color: string;
-  total_sec: number;
-};
-
-export type ReportSummary = {
-  date_from: string;
-  date_to: string;
-  total_sec: number;
-  daily: DailyPoint[];
-  by_project: ProjectBreakdown[];
-};
 
 export async function fetchReport(
   from: string,
