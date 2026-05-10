@@ -51,9 +51,15 @@ export async function updateSetting(
   return res.data;
 }
 
+export type DailyProjectPoint = {
+  project_id: number;
+  total_sec: number;
+};
+
 export type DailyPoint = {
   date: string;
   total_sec: number;
+  by_project: DailyProjectPoint[];
 };
 
 export type ProjectBreakdown = {

@@ -1,10 +1,16 @@
+from collections import defaultdict
 from datetime import date
 
 from sqlalchemy import func
 from sqlmodel import Session, col, select
 
 from backend.models import Project, TimeEntry
-from backend.schemas.report import DailyPoint, ProjectBreakdown, ReportSummary
+from backend.schemas.report import (
+    DailyPoint,
+    DailyProjectPoint,
+    ProjectBreakdown,
+    ReportSummary,
+)
 
 
 class ReportService:
@@ -19,16 +25,29 @@ class ReportService:
         daily_stmt = (
             select(
                 date_expr.label("date"),
+                TimeEntry.project_id,
                 func.coalesce(func.sum(TimeEntry.duration_sec), 0).label("total_sec"),
             )
             .where(col(TimeEntry.stopped_at).is_not(None))
             .where(date_expr >= from_str)
             .where(date_expr <= to_str)
-            .group_by(date_expr)
-            .order_by(date_expr.asc())
+            .group_by(date_expr, TimeEntry.project_id)
+            .order_by(date_expr.asc(), col(TimeEntry.project_id).asc())
         )
         daily_rows = self.session.exec(daily_stmt).all()
-        daily = [DailyPoint(date=r.date, total_sec=int(r.total_sec)) for r in daily_rows]
+        by_date: dict[str, list[DailyProjectPoint]] = defaultdict(list)
+        for r in daily_rows:
+            by_date[r.date].append(
+                DailyProjectPoint(project_id=r.project_id, total_sec=int(r.total_sec))
+            )
+        daily = [
+            DailyPoint(
+                date=d,
+                total_sec=sum(p.total_sec for p in by_date[d]),
+                by_project=by_date[d],
+            )
+            for d in sorted(by_date.keys())
+        ]
 
         project_stmt = (
             select(

@@ -100,6 +100,71 @@ function formatDurationWithSeconds(totalSec: number): string {
   return `${s} 秒`;
 }
 
+type StackedTooltipPayload = {
+  name?: string;
+  value?: number | string;
+  color?: string;
+};
+
+function StackedTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: StackedTooltipPayload[];
+  label?: string;
+}) {
+  if (!active || !payload || payload.length === 0) return null;
+  const total = payload.reduce((sum, p) => sum + (Number(p.value) || 0), 0);
+  return (
+    <Box
+      sx={{
+        bgcolor: "#fff",
+        border: "1px solid #ccc",
+        borderRadius: 1,
+        px: 1.25,
+        py: 1,
+        fontSize: 12,
+        boxShadow: 1,
+      }}
+    >
+      <Box sx={{ fontWeight: 600, mb: 0.5, color: "#555" }}>{label}</Box>
+      {payload.map((p, i) => (
+        <Box
+          key={i}
+          sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.25 }}
+        >
+          <Box
+            sx={{
+              width: 10,
+              height: 10,
+              bgcolor: p.color,
+              borderRadius: "2px",
+              flexShrink: 0,
+            }}
+          />
+          <Box sx={{ flexGrow: 1 }}>{p.name}</Box>
+          <Box sx={{ fontWeight: 500 }}>{p.value} 分</Box>
+        </Box>
+      ))}
+      <Box
+        sx={{
+          borderTop: "1px solid #eee",
+          mt: 0.5,
+          pt: 0.5,
+          display: "flex",
+          justifyContent: "space-between",
+          fontWeight: 600,
+        }}
+      >
+        <span>合計</span>
+        <span>{total} 分</span>
+      </Box>
+    </Box>
+  );
+}
+
 export function Report() {
   const initial = PRESETS[2].range(); // 今月
   const [from, setFrom] = useState<string>(initial[0]);
@@ -134,10 +199,17 @@ export function Report() {
     setTo(t);
   }
 
-  const dailyChartData = (data?.daily ?? []).map((d) => ({
-    date: d.date.slice(5),
-    minutes: Math.round(d.total_sec / 60),
-  }));
+  const stackProjects = [...(data?.by_project ?? [])].sort(
+    (a, b) => a.project_id - b.project_id,
+  );
+
+  const dailyChartData = (data?.daily ?? []).map((d) => {
+    const row: Record<string, number | string> = { date: d.date.slice(5) };
+    for (const p of d.by_project) {
+      row[`p${p.project_id}`] = Math.round(p.total_sec / 60);
+    }
+    return row;
+  });
 
   return (
     <Box sx={{ py: 3 }}>
@@ -223,15 +295,21 @@ export function Report() {
                         <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                         <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                         <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip
-                          formatter={(value) => [`${value} 分`, ""]}
-                          labelStyle={{ color: "#555" }}
-                        />
-                        <Bar
-                          dataKey="minutes"
-                          fill="#007AFF"
-                          radius={[3, 3, 0, 0]}
-                        />
+                        <Tooltip content={<StackedTooltip />} />
+                        {stackProjects.map((proj, idx) => (
+                          <Bar
+                            key={proj.project_id}
+                            dataKey={`p${proj.project_id}`}
+                            name={proj.name}
+                            fill={proj.color}
+                            stackId="a"
+                            radius={
+                              idx === stackProjects.length - 1
+                                ? [3, 3, 0, 0]
+                                : 0
+                            }
+                          />
+                        ))}
                       </BarChart>
                     </ResponsiveContainer>
                   </Box>
@@ -277,7 +355,6 @@ export function Report() {
             )}
           </Container>
         </Box>
-
       </Stack>
     </Box>
   );

@@ -1,9 +1,15 @@
 from sqlmodel import SQLModel
 
 
+class DailyProjectPoint(SQLModel):
+    project_id: int
+    total_sec: int
+
+
 class DailyPoint(SQLModel):
     date: str  # "2026-04-23"
     total_sec: int
+    by_project: list[DailyProjectPoint]
 
 
 class ProjectBreakdown(SQLModel):
