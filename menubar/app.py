@@ -222,7 +222,12 @@ class TimerkApp(rumps.App):
         button = self._nsapp.nsstatusitem.button()
 
         if self.active_started_at is None:
-            button.setAttributedTitle_(NSMutableAttributedString.alloc().initWithString_("⏱"))
+            idle_icon = _sf_symbol_image("timer")
+            if idle_icon is not None:
+                button.setImage_(idle_icon)
+                button.setAttributedTitle_(NSMutableAttributedString.alloc().initWithString_(""))
+            else:
+                button.setAttributedTitle_(NSMutableAttributedString.alloc().initWithString_("⏱"))
             return
 
         elapsed = int((datetime.now() - self.active_started_at).total_seconds())
@@ -254,6 +259,7 @@ class TimerkApp(rumps.App):
 
         title = f"{CIRCLE} {time_str}"
         attr = _colored_circle_attributed(title, color_hex)
+        button.setImage_(None)
         button.setAttributedTitle_(attr)
 
 
