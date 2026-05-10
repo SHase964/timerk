@@ -1,0 +1,458 @@
+openapi: 3.1.0
+info:
+  title: timerk
+  version: 0.1.0
+paths:
+  /api/projects:
+    get:
+      tags:
+      - projects
+      summary: List Projects
+      operationId: list_projects_api_projects_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ProjectRead'
+                type: array
+                title: Response List Projects Api Projects Get
+    post:
+      tags:
+      - projects
+      summary: Create Project
+      operationId: create_project_api_projects_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/projects/{project_id}:
+    put:
+      tags:
+      - projects
+      summary: Update Project
+      operationId: update_project_api_projects__project_id__put
+      parameters:
+      - name: project_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Project Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - projects
+      summary: Delete Project
+      operationId: delete_project_api_projects__project_id__delete
+      parameters:
+      - name: project_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Project Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/time-entries/active:
+    get:
+      tags:
+      - time_entries
+      summary: Get Active
+      operationId: get_active_api_time_entries_active_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/TimeEntryRead'
+                - type: 'null'
+                title: Response Get Active Api Time Entries Active Get
+  /api/time-entries/start:
+    post:
+      tags:
+      - time_entries
+      summary: Start Timer
+      operationId: start_timer_api_time_entries_start_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryStartRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntryRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/time-entries/stop:
+    post:
+      tags:
+      - time_entries
+      summary: Stop Timer
+      operationId: stop_timer_api_time_entries_stop_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntryRead'
+  /api/settings:
+    get:
+      tags:
+      - settings
+      summary: List Settings
+      operationId: list_settings_api_settings_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SettingRead'
+                type: array
+                title: Response List Settings Api Settings Get
+  /api/settings/{key}:
+    put:
+      tags:
+      - settings
+      summary: Update Setting
+      operationId: update_setting_api_settings__key__put
+      parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/reports:
+    get:
+      tags:
+      - reports
+      summary: Report Summary
+      operationId: report_summary_api_reports_get
+      parameters:
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: From
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: To
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportSummary'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    DailyPoint:
+      properties:
+        date:
+          type: string
+          title: Date
+        total_sec:
+          type: integer
+          title: Total Sec
+        by_project:
+          items:
+            $ref: '#/components/schemas/DailyProjectPoint'
+          type: array
+          title: By Project
+      type: object
+      required:
+      - date
+      - total_sec
+      - by_project
+      title: DailyPoint
+    DailyProjectPoint:
+      properties:
+        project_id:
+          type: integer
+          title: Project Id
+        total_sec:
+          type: integer
+          title: Total Sec
+      type: object
+      required:
+      - project_id
+      - total_sec
+      title: DailyProjectPoint
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ProjectBreakdown:
+      properties:
+        project_id:
+          type: integer
+          title: Project Id
+        name:
+          type: string
+          title: Name
+        color:
+          type: string
+          title: Color
+        total_sec:
+          type: integer
+          title: Total Sec
+      type: object
+      required:
+      - project_id
+      - name
+      - color
+      - total_sec
+      title: ProjectBreakdown
+    ProjectCreate:
+      properties:
+        name:
+          type: string
+          title: Name
+        color:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Color
+      type: object
+      required:
+      - name
+      title: ProjectCreate
+    ProjectRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        name:
+          type: string
+          title: Name
+        color:
+          type: string
+          title: Color
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - name
+      - color
+      - created_at
+      title: ProjectRead
+    ProjectUpdate:
+      properties:
+        color:
+          type: string
+          title: Color
+      type: object
+      required:
+      - color
+      title: ProjectUpdate
+    ReportSummary:
+      properties:
+        date_from:
+          type: string
+          title: Date From
+        date_to:
+          type: string
+          title: Date To
+        total_sec:
+          type: integer
+          title: Total Sec
+        daily:
+          items:
+            $ref: '#/components/schemas/DailyPoint'
+          type: array
+          title: Daily
+        by_project:
+          items:
+            $ref: '#/components/schemas/ProjectBreakdown'
+          type: array
+          title: By Project
+      type: object
+      required:
+      - date_from
+      - date_to
+      - total_sec
+      - daily
+      - by_project
+      title: ReportSummary
+    SettingRead:
+      properties:
+        key:
+          type: string
+          title: Key
+        value:
+          type: string
+          title: Value
+      type: object
+      required:
+      - key
+      - value
+      title: SettingRead
+    SettingUpdate:
+      properties:
+        value:
+          type: string
+          title: Value
+      type: object
+      required:
+      - value
+      title: SettingUpdate
+    TimeEntryRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        project_id:
+          type: integer
+          title: Project Id
+        started_at:
+          type: string
+          format: date-time
+          title: Started At
+        stopped_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Stopped At
+        duration_sec:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Duration Sec
+      type: object
+      required:
+      - id
+      - project_id
+      - started_at
+      title: TimeEntryRead
+    TimeEntryStartRequest:
+      properties:
+        project_id:
+          type: integer
+          title: Project Id
+      type: object
+      required:
+      - project_id
+      title: TimeEntryStartRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
