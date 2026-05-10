@@ -37,9 +37,7 @@ class ReportService:
         daily_rows = self.session.exec(daily_stmt).all()
         by_date: dict[str, list[DailyProjectPoint]] = defaultdict(list)
         for r in daily_rows:
-            by_date[r.date].append(
-                DailyProjectPoint(project_id=r.project_id, total_sec=int(r.total_sec))
-            )
+            by_date[r.date].append(DailyProjectPoint(project_id=r.project_id, total_sec=int(r.total_sec)))
         daily = [
             DailyPoint(
                 date=d,
