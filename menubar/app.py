@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from AppKit import NSColor, NSForegroundColorAttributeName
+from AppKit import NSColor, NSForegroundColorAttributeName, NSImage
 from Foundation import NSDate, NSMutableAttributedString, NSRunLoop, NSRunLoopCommonModes, NSTimer
 import requests
 import rumps
@@ -26,6 +26,13 @@ def _hex_to_nscolor(hex_str: str) -> NSColor:
     g = int(h[2:4], 16) / 255.0
     b = int(h[4:6], 16) / 255.0
     return NSColor.colorWithSRGBRed_green_blue_alpha_(r, g, b, 1.0)
+
+
+def _sf_symbol_image(name: str) -> NSImage | None:
+    img = NSImage.imageWithSystemSymbolName_accessibilityDescription_(name, None)
+    if img is not None:
+        img.setTemplate_(True)
+    return img
 
 
 def _colored_circle_attributed(text: str, color_hex: str) -> NSMutableAttributedString:
@@ -132,8 +139,18 @@ class TimerkApp(rumps.App):
         self.menu.add(self._stop_item)
 
         self.menu.add(rumps.separator)
-        self.menu.add(rumps.MenuItem("📊 レポート", callback=self._open_report))
-        self.menu.add(rumps.MenuItem("⚙️ 設定", callback=self._open_settings))
+        report_item = rumps.MenuItem("レポート", callback=self._open_report)
+        report_icon = _sf_symbol_image("chart.bar")
+        if report_icon is not None:
+            report_item._menuitem.setImage_(report_icon)
+        self.menu.add(report_item)
+
+        settings_item = rumps.MenuItem("設定", callback=self._open_settings)
+        settings_icon = _sf_symbol_image("gearshape")
+        if settings_icon is not None:
+            settings_item._menuitem.setImage_(settings_icon)
+        self.menu.add(settings_item)
+
         self.menu.add(rumps.separator)
         self.menu.add(rumps.MenuItem("終了", callback=rumps.quit_application))
 
