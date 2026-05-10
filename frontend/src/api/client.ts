@@ -18,8 +18,11 @@ export async function listProjects(): Promise<Project[]> {
   return res.data;
 }
 
-export async function createProject(name: string): Promise<Project> {
-  const res = await api.post<Project>("/projects", { name });
+export async function createProject(
+  name: string,
+  color?: string,
+): Promise<Project> {
+  const res = await api.post<Project>("/projects", { name, color });
   return res.data;
 }
 

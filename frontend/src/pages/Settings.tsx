@@ -24,13 +24,30 @@ import {
   type Project,
 } from "../api/client";
 
+const COLOR_PALETTE = [
+  "#FF3B30",
+  "#FF9500",
+  "#FFCC00",
+  "#34C759",
+  "#007AFF",
+  "#AF52DE",
+  "#FF2D55",
+  "#5AC8FA",
+  "#A2845E",
+];
+
 export function Settings() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [newName, setNewName] = useState("");
+  const [newColor, setNewColor] = useState<string | null>(null);
   const [showSeconds, setShowSeconds] = useState(false);
   const [showHours, setShowHours] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const defaultNextColor =
+    COLOR_PALETTE[projects.length % COLOR_PALETTE.length];
+  const pickerColor = newColor ?? defaultNextColor;
 
   useEffect(() => {
     void loadData();
@@ -62,8 +79,9 @@ export function Settings() {
     e.preventDefault();
     const name = newName.trim();
     if (!name) return;
-    await createProject(name);
+    await createProject(name, pickerColor);
     setNewName("");
+    setNewColor(null);
     await loadData();
   }
 
@@ -120,8 +138,23 @@ export function Settings() {
               direction="row"
               spacing={1}
               onSubmit={handleAdd}
-              sx={{ mb: 2 }}
+              sx={{ mb: 2, alignItems: "center" }}
             >
+              <input
+                type="color"
+                value={pickerColor}
+                onChange={(e) => setNewColor(e.target.value)}
+                style={{
+                  width: 32,
+                  height: 32,
+                  padding: 0,
+                  border: "1px solid #ccc",
+                  borderRadius: 4,
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+                title="色を指定"
+              />
               <TextField
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
