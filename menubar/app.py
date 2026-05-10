@@ -134,7 +134,6 @@ class TimerkApp(rumps.App):
         self.menu.add(rumps.separator)
         self.menu.add(rumps.MenuItem("📊 レポート", callback=self._open_report))
         self.menu.add(rumps.MenuItem("⚙️ 設定", callback=self._open_settings))
-        self.menu.add(rumps.MenuItem("🔄 更新", callback=self._refresh))
         self.menu.add(rumps.separator)
         self.menu.add(rumps.MenuItem("終了", callback=rumps.quit_application))
 
@@ -171,10 +170,6 @@ class TimerkApp(rumps.App):
             self.active_project_id = None
         except Exception as e:
             rumps.notification("timerk", "停止失敗", str(e))
-
-    def _refresh(self, _) -> None:
-        self._refresh_state()
-        self._build_menu()
 
     def _open_settings(self, _) -> None:
         if self._settings_proc is not None and self._settings_proc.poll() is None:
