@@ -15,7 +15,12 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["mypy>=1.20.2", "ruff>=0.15.12"]
+dev = [
+    "mypy>=1.20.2",
+    "py2app>=0.28.10",
+    "ruff>=0.15.12",
+    "setuptools<70",
+]
 
 [tool.pyright]
 reportCallIssue = "none"

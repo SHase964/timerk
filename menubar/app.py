@@ -1,18 +1,18 @@
+from collections.abc import Callable
 from datetime import datetime
-from pathlib import Path
 import subprocess
-import sys
 
 from AppKit import NSColor, NSForegroundColorAttributeName, NSImage
 from Foundation import NSDate, NSMutableAttributedString, NSRunLoop, NSRunLoopCommonModes, NSTimer
-import requests
+import requests  # type: ignore[import-untyped]
 import rumps
+
+from bundle import spawn_self
 
 API_BASE = "http://127.0.0.1:8000/api"
 SETTINGS_URL = "http://127.0.0.1:8000/#/settings"
 REPORT_URL = "http://127.0.0.1:8000/#/report"
 REQUEST_TIMEOUT = 2
-WINDOW_SCRIPT = Path(__file__).resolve().parent / "window.py"
 
 CIRCLE = "●"
 DEFAULT_HEX = "#8E8E93"
@@ -156,8 +156,8 @@ class TimerkApp(rumps.App):
 
     # --- Callbacks ---
 
-    def _make_start_callback(self, project_id: int):
-        def callback(_):
+    def _make_start_callback(self, project_id: int) -> Callable[[rumps.MenuItem], None]:
+        def callback(_: rumps.MenuItem) -> None:
             self._start_timer(project_id)
 
         return callback
@@ -176,7 +176,7 @@ class TimerkApp(rumps.App):
         except Exception as e:
             rumps.notification("timerk", "開始失敗", str(e))
 
-    def _stop(self, _) -> None:
+    def _stop(self, _: rumps.MenuItem) -> None:
         if self.active_started_at is None:
             rumps.notification("timerk", "停止", "計測中のタイマーはありません")
             return
@@ -188,27 +188,27 @@ class TimerkApp(rumps.App):
         except Exception as e:
             rumps.notification("timerk", "停止失敗", str(e))
 
-    def _open_settings(self, _) -> None:
+    def _open_settings(self, _: rumps.MenuItem) -> None:
         if self._settings_proc is not None and self._settings_proc.poll() is None:
             return
 
         try:
-            self._settings_proc = subprocess.Popen([sys.executable, str(WINDOW_SCRIPT), SETTINGS_URL, "timerk - 設定"])
+            self._settings_proc = spawn_self("--window", SETTINGS_URL, "timerk - 設定")
         except Exception as e:
             rumps.notification("timerk", "設定画面の起動失敗", str(e))
 
-    def _open_report(self, _) -> None:
+    def _open_report(self, _: rumps.MenuItem) -> None:
         if self._report_proc is not None and self._report_proc.poll() is None:
             return
 
         try:
-            self._report_proc = subprocess.Popen([sys.executable, str(WINDOW_SCRIPT), REPORT_URL, "timerk - レポート"])
+            self._report_proc = spawn_self("--window", REPORT_URL, "timerk - レポート")
         except Exception as e:
             rumps.notification("timerk", "レポート画面の起動失敗", str(e))
 
     # --- Tick ---
 
-    def _tick(self, _) -> None:
+    def _tick(self, _: rumps.Timer) -> None:
         self._refresh_settings()
 
         if self._settings_proc is not None and self._settings_proc.poll() is not None:
