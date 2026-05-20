@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -19,7 +19,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { fetchReport, type ReportSummary } from "../api/client";
+import {
+  fetchReport,
+  listTimeEntries,
+  type TimeEntry,
+  type ReportSummary,
+} from "../api/client";
+import { TimeEntryEditDialog } from "../components/TimeEntryEditDialog";
 
 function toISO(d: Date): string {
   const y = d.getFullYear();
@@ -100,6 +106,15 @@ function formatDurationWithSeconds(totalSec: number): string {
   return `${s} 秒`;
 }
 
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  const mm = d.getMonth() + 1;
+  const dd = d.getDate();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  return `${mm}/${dd} ${hh}:${mi}`;
+}
+
 type StackedTooltipPayload = {
   name?: string;
   value?: number | string;
@@ -172,6 +187,9 @@ export function Report() {
   const [data, setData] = useState<ReportSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!from || !to) return;
@@ -191,7 +209,22 @@ export function Report() {
     return () => {
       cancelled = true;
     };
-  }, [from, to]);
+  }, [from, to, reloadKey]);
+
+  useEffect(() => {
+    if (!from || !to) return;
+    let cancelled = false;
+    listTimeEntries(from, to)
+      .then((result) => {
+        if (!cancelled) setEntries(result);
+      })
+      .catch(() => {
+        if (!cancelled) setEntries([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [from, to, reloadKey]);
 
   function applyPreset(preset: Preset) {
     const [f, t] = preset.range();
@@ -210,6 +243,14 @@ export function Report() {
     }
     return row;
   });
+
+  const projectMap = useMemo(() => {
+    const m = new Map<number, { name: string; color: string }>();
+    for (const p of data?.by_project ?? []) {
+      m.set(p.project_id, { name: p.name, color: p.color });
+    }
+    return m;
+  }, [data]);
 
   return (
     <Box sx={{ py: 3 }}>
@@ -355,7 +396,68 @@ export function Report() {
             )}
           </Container>
         </Box>
+
+        <Box component="section">
+          <Container maxWidth="sm">
+            <Typography
+              variant="subtitle2"
+              component="h2"
+              color="text.secondary"
+              sx={{ mb: 1, textAlign: "left", fontWeight: 600 }}
+            >
+              明細
+            </Typography>
+            {entries.length === 0 ? (
+              <Typography color="text.secondary">記録がありません</Typography>
+            ) : (
+              <List disablePadding>
+                {entries.map((e) => {
+                  const proj = projectMap.get(e.project_id);
+                  return (
+                    <ListItem
+                      key={e.id}
+                      divider
+                      disableGutters
+                      onClick={() => setSelectedEntry(e)}
+                      sx={{ cursor: "pointer" }}
+                    >
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: "50%",
+                          bgcolor: proj?.color ?? "#ccc",
+                          mr: 1.5,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <ListItemText
+                        primary={proj?.name ?? `#${e.project_id}`}
+                        secondary={
+                          e.stopped_at
+                            ? `${formatTime(e.started_at)} 〜 ${formatTime(e.stopped_at)}`
+                            : `${formatTime(e.started_at)} 〜 計測中`
+                        }
+                      />
+                      {e.duration_sec != null && (
+                        <Typography variant="body2" color="text.secondary">
+                          {formatDuration(e.duration_sec)}
+                        </Typography>
+                      )}
+                    </ListItem>
+                  );
+                })}
+              </List>
+            )}
+          </Container>
+        </Box>
       </Stack>
+
+      <TimeEntryEditDialog
+        entry={selectedEntry}
+        onClose={() => setSelectedEntry(null)}
+        onSaved={() => setReloadKey((k) => k + 1)}
+      />
     </Box>
   );
 }

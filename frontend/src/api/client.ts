@@ -12,6 +12,9 @@ export type DailyProjectPoint = components["schemas"]["DailyProjectPoint"];
 export type DailyPoint = components["schemas"]["DailyPoint"];
 export type ProjectBreakdown = components["schemas"]["ProjectBreakdown"];
 export type ReportSummary = components["schemas"]["ReportSummary"];
+export type TimeEntry = components["schemas"]["TimeEntryRead"];
+export type TimeEntryUpdate = components["schemas"]["TimeEntryUpdateRequest"];
+export type TimeEntryStart = components["schemas"]["TimeEntryStartRequest"];
 
 export async function listProjects(): Promise<Project[]> {
   const res = await api.get<Project[]>("/projects");
@@ -59,4 +62,26 @@ export async function fetchReport(
     params: { from, to },
   });
   return res.data;
+}
+
+export async function listTimeEntries(
+  from: string,
+  to: string,
+): Promise<TimeEntry[]> {
+  const res = await api.get<TimeEntry[]>("/time-entries", {
+    params: { from, to },
+  });
+  return res.data;
+}
+
+export async function updateTimeEntry(
+  id: number,
+  payload: TimeEntryUpdate,
+): Promise<TimeEntry> {
+  const res = await api.patch<TimeEntry>(`/time-entries/${id}`, payload);
+  return res.data;
+}
+
+export async function deleteTimeEntry(id: number): Promise<void> {
+  await api.delete(`/time-entries/${id}`);
 }

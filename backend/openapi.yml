@@ -150,6 +150,96 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TimeEntryRead'
+  /api/time-entries:
+    get:
+      tags:
+      - time_entries
+      summary: List Time Entries
+      operationId: list_time_entries_api_time_entries_get
+      parameters:
+      - name: from
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: From
+      - name: to
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+          title: To
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeEntryRead'
+                title: Response List Time Entries Api Time Entries Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/time-entries/{entry_id}:
+    patch:
+      tags:
+      - time_entries
+      summary: Update Entry
+      operationId: update_entry_api_time_entries__entry_id__patch
+      parameters:
+      - name: entry_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Entry Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryUpdateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntryRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - time_entries
+      summary: Delete Entry
+      operationId: delete_entry_api_time_entries__entry_id__delete
+      parameters:
+      - name: entry_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Entry Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/settings:
     get:
       tags:
@@ -430,6 +520,22 @@ components:
       required:
       - project_id
       title: TimeEntryStartRequest
+    TimeEntryUpdateRequest:
+      properties:
+        started_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Started At
+        stopped_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Stopped At
+      type: object
+      title: TimeEntryUpdateRequest
     ValidationError:
       properties:
         loc:

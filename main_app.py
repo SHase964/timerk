@@ -52,7 +52,7 @@ def _run_backend() -> None:
 
 
 def _run_window(url: str, title: str) -> None:
-    webview.create_window(title, url, width=640, height=540)
+    webview.create_window(title, url, width=640, height=780)
     webview.start()
 
 

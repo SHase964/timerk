@@ -7,6 +7,11 @@ class TimeEntryStartRequest(SQLModel):
     project_id: int
 
 
+class TimeEntryUpdateRequest(SQLModel):
+    started_at: datetime | None = None
+    stopped_at: datetime | None = None
+
+
 class TimeEntryRead(SQLModel):
     id: int
     project_id: int
